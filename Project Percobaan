@@ -1,0 +1,175 @@
+#include <DHT.h>
+#include <DHT_U.h>
+#include <Wire.h> 
+#include <Arduino.h>
+#include <LiquidCrystal_I2C.h>
+#include "max6675.h"
+#include "DHT.h"
+#include <HX711_ADC.h>
+
+#define shutpin 5 
+#define DHTTYPE DHT22
+#define Kalibrasi 1000
+ 
+const int reset = 2;
+
+int stats;
+int relay1 = 10;
+int relay2 = 11;
+int count = 0;
+int IRSensor = 9;
+int thermoDO = 4;
+int thermoCS = 5;
+int thermoCLK = 6;
+
+MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+volatile byte relayState = LOW;
+DHT dht(DHTPIN, DHTTYPE);
+HX711_ADC LoadCell(8, 7);
+
+
+void setup(){ 
+  Serial.begin(9600); 
+  dht.begin();
+  pinMode(reset, OUTPUT);
+  pinMode(relay1, OUTPUT);
+  pinMode(relay2, OUTPUT);
+  pinMode(IRSensor, INPUT);
+  LoadCell.begin(); // start connection to HX711
+  LoadCell.start(2000); // load cells gets 2000ms of time to stabilize
+  LoadCell.setCalFactor(999.0); //kalibrasi
+  lcd.init();
+  lcd.backlight();
+  lcd.print ("Project Coralife");
+  lcd.setCursor(0, 1);
+  lcd.print ("Counter Briket");
+  delay (2000);
+  lcd.clear();
+}
+
+void loop()
+{
+  int t = dht.readTemperature(); 
+
+  if ( isnan(t) ) {
+    return;
+  }
+
+  lcd.setCursor(0, 0 );
+  lcd.print("Suhu Kandang");
+  lcd.setCursor(0, 1 );
+  lcd.print("Suhu: ");
+  lcd.setCursor(10, 1 );
+  lcd.print(t);
+  delay(2000);
+  lcd.clear();
+
+  if(t <=29){
+    lcd.setCursor(0, 0 );
+    lcd.print("Suhu Rendah");
+    lcd.setCursor(0, 1 );
+    lcd.print("Cek Briket"); 
+    delay(2000);   
+    lcd.clear(); 
+
+    ir.Read
+    LoadCell.update();
+    float Berat = LoadCell.getData(); // get output value  
+    lcd.setCursor(0, 0 );
+    lcd.print("Berat Briket");
+    lcd.setCursor(0, 1 );
+    lcd.print(Berat);
+    lcd.setCursor(0, 7 );    
+    lcd.print("Kilogram");
+    delay(2000);
+    lcd.clear();
+     
+    if(Berat >= 1){
+      lcd.setCursor(0, 0 );
+      lcd.print("Proses Dimulai");
+      lcd.setCursor(0, 1 );
+      lcd.print("Roller Menyala"); 
+      delay(2000);    
+      lcd.clear(); 
+      arang(); 
+      }
+      
+    else{
+      lcd.setCursor(0, 0 );
+      lcd.print("Arang Habis");
+      lcd.setCursor(0, 1 );
+      lcd.print("Mohon Isi Arang");
+      delay(50000);  
+      }       
+  }
+
+  else if(t >=29){
+    delay(500);    
+  }
+}
+void arang(){
+  int stats;
+  int sensorStatus = digitalRead(IRSensor);
+
+  if (sensorStatus == LOW) {
+    stats = 1;
+
+  } else {
+    stats = 0;
+  }
+
+  if (stats == 1) {
+    count = count + 1;
+  }
+  
+  lcd.setCursor(0, 0 );
+  lcd.print("Briket Jatuh");
+  lcd.setCursor(0, 1 );
+  lcd.print("Briket: ");
+  lcd.setCursor(10, 1 );
+  lcd.print(count);
+  motorNyala();
+}
+
+void motorNyala(){
+   if(count <=10){
+     digitalWrite(relay2, LOW); 
+     arang();        
+    }
+    else{
+      digitalWrite(relay2, HIGH);
+      lcd.setCursor(0, 0 );
+      lcd.print("Briket Terisi");
+      lcd.setCursor(0, 1 );
+      lcd.print("Mengecek Tungku");
+      delay(2000);
+      busiNyala();
+    }    
+  }
+
+void busiNyala(){
+  thermocouple.readCelsius();
+  int suhu;
+  suhu = thermocouple.readCelsius();
+  Serial.print("Suhu Tungku = ");
+  Serial.println(suhu);
+
+  if(suhu <=44){
+    digitalWrite(relay1, LOW);
+    Serial.print("Busi Menyala");
+    Serial.println();
+    delay(5000);
+  }
+  
+  else{
+    digitalWrite(relay1, HIGH);
+    Serial.print("Busi Dimatikan");
+    Serial.println();
+    delay(1000);
+  }
+}
+
+
+    
+ 
