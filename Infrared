@@ -1,1 +1,16 @@
+const int irReceiverPin = 7; // Pin connected to the IR receiver of the sensor
 
+void setup() {
+  pinMode(irReceiverPin, INPUT); // Set the IR receiver pin as input
+  Serial.begin(9600); // Start the serial communication
+}
+
+void loop() {
+  delayMicroseconds(10); // Wait for a short time
+  int irValue = digitalRead(irReceiverPin); // Read the value from the IR receiver
+
+  Serial.print("IR value: ");
+  Serial.println(irValue); // Print the IR value to the serial monitor
+
+  delay(100); // Wait for a short time before taking the next reading
+}
