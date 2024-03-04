@@ -1,1 +1,24 @@
+/*
+ * Tutorial By IOTkece.com
+ */
 
+const int Sensor = A0;
+int maxudarabersih = 100;
+
+void setup() {
+ Serial.begin(9600);
+ pinMode(A0, INPUT);
+
+}
+
+void loop() {
+  int dataSensor = analogRead(Sensor);
+  Serial.print(dataSensor);
+  Serial.print(" ");
+  if (dataSensor > maxudarabersih)
+    Serial.println("Kualitas Udara Tidak Baik");
+  else 
+    Serial.println("Kualitas Udara Baik");
+  
+delay(1000);
+}
