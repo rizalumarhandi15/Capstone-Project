@@ -1,31 +1,32 @@
+#include <virtuabotixRTC.h>
+// Creation of the Real Time Clock Object
+virtuabotixRTC myRTC(6, 7, 8);
 
-#include <DS3231.h> //mengincludekan library DS3231
-
-DS3231  rtc(SDA, SCL); // inisialisasi penggunaan i2c
-
-void setup()
-{
-  Serial.begin(115200); //set komunikasi baut serial monitor pada 115200
-  rtc.begin();
-  
-  //setting pertama download program
-  //rtc.setDate(07, 4, 2018);   //mensetting tanggal 07 april 2018
-  //rtc.setTime(22, 00, 00);     //menset jam 22:00:00
-  //rtc.setDOW(6);     //menset hari "Sabtu"
-
-//setelah didownload awal selesai, download kedua dengan memberi tanda komen "//"
+void setup()  {
+  Serial.begin(9600);
+  // Set the current date, and time in the following format:
+  // seconds, minutes, hours, day of the week, day of the month, month, year
+  //myRTC.setDS1302Time(10, 56, 22, 6 , 17, 4, 2024);
 }
 
-void loop()
-{
-  Serial.print(rtc.getDOWStr()); //prosedur pembacaan hari
-  Serial.print(" ");
-  
-  Serial.print(rtc.getDateStr()); //prosedur pembacaan tanggal
-  Serial.print(" -- ");
+void loop()  {
+  // This allows for the update of variables for time or accessing the individual elements.
+  myRTC.updateTime();
 
-  Serial.println(rtc.getTimeStr()); //prosedur pembacaan waktu
-  
-  delay (1000); //waktu tunda 1 detik per cycle
+  // Start printing elements as individuals
+  Serial.print("Current Date / Time: ");
+  Serial.print(myRTC.dayofmonth);
+  Serial.print("/");
+  Serial.print(myRTC.month);
+  Serial.print("/");
+  Serial.print(myRTC.year);
+  Serial.print("  ");
+  Serial.print(myRTC.hours);
+  Serial.print(":");
+  Serial.print(myRTC.minutes);
+  Serial.print(":");
+  Serial.println(myRTC.seconds);
+
+  // Delay so the program doesn't print non-stop
+  delay(500);
 }
-
